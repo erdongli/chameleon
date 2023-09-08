@@ -4,10 +4,15 @@ import (
 	"log"
 	"time"
 
+	"github.com/erdongli/chameleon/internal/dns"
 	"github.com/erdongli/chameleon/internal/ip"
 )
 
-func Run(interval time.Duration) {
+const (
+	interval = 5 * time.Minute
+)
+
+func Run(updater *dns.Updater) {
 	ticker := time.NewTicker(interval)
 
 	for range ticker.C {
@@ -17,6 +22,11 @@ func Run(interval time.Duration) {
 			continue
 		}
 
-		log.Println(ip)
+		if err := updater.Update(ip); err != nil {
+			log.Println(err)
+			continue
+		}
+
+		log.Printf("DDNS updated to %s", ip)
 	}
 }

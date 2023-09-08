@@ -7,8 +7,12 @@ import (
 	"net/http"
 )
 
+const (
+	url = "https://toolbox.erdongli.com/ip"
+)
+
 func Get() (string, error) {
-	resp, err := http.Get("https://toolbox.erdongli.com/ip")
+	resp, err := http.Get(url)
 	if err != nil {
 		return "", err
 	}
@@ -22,8 +26,8 @@ func Get() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	ip := string(body)
 
+	ip := string(body)
 	if net.ParseIP(ip) == nil {
 		return "", fmt.Errorf("invalid ip %s", ip)
 	}
