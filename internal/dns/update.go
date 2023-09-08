@@ -19,8 +19,8 @@ const (
 	headerContentType = "content-type"
 	contentType       = "application/x-www-form-urlencoded"
 
-	statusGood     = "good"
-	statusNoChange = "nochg"
+	respGood     = "good"
+	respNoChange = "nochg"
 )
 
 type Updater struct {
@@ -36,9 +36,9 @@ func New(username, password, hostname string) *Updater {
 	}
 }
 
-func (u *Updater) Update(ip string) error {
+func (u *Updater) Update(ip string) (bool, error) {
 	if ip == u.ip {
-		return fmt.Errorf("ip not changed: %s", ip)
+		return false, nil
 	}
 
 	v := url.Values{}
@@ -47,7 +47,7 @@ func (u *Updater) Update(ip string) error {
 
 	req, err := http.NewRequest(http.MethodPost, u.url, strings.NewReader(v.Encode()))
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	req.Header.Add(headerUserAgent, userAgent)
@@ -55,20 +55,20 @@ func (u *Updater) Update(ip string) error {
 
 	resp, err := u.client.Do(req)
 	if err != nil {
-		return err
+		return false, err
 	}
 	defer resp.Body.Close()
 
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return false, err
 	}
 
 	r := string(b)
-	if !strings.HasPrefix(r, statusGood) && !strings.HasPrefix(r, statusNoChange) {
-		return fmt.Errorf("error response: %s", r)
+	if !strings.HasPrefix(r, respGood) && !strings.HasPrefix(r, respNoChange) {
+		return false, fmt.Errorf("error response: %s", r)
 	}
 	u.ip = ip
 
-	return nil
+	return !strings.HasPrefix(r, respNoChange), nil
 }

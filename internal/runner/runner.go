@@ -22,8 +22,13 @@ func Run(updater *dns.Updater) {
 			continue
 		}
 
-		if err := updater.Update(ip); err != nil {
+		ok, err := updater.Update(ip)
+		if err != nil {
 			log.Println(err)
+			continue
+		}
+		if !ok {
+			log.Printf("ip not changed: %s", ip)
 			continue
 		}
 
